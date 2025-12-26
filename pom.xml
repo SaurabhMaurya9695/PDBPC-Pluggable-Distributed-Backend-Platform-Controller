@@ -6,7 +6,7 @@
 
     <groupId>com.pdbp</groupId>
     <artifactId>pdbpc</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PDBPC - PDBP Controllers</name>
@@ -17,7 +17,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
+
         <!-- Dependency Versions -->
         <spark.version>2.9.4</spark.version>
         <jackson.version>2.13.5</jackson.version>
@@ -27,21 +27,21 @@
     <dependencies>
         <!-- PDBP API (for Plugin, PluginState, PluginException) -->
         <!-- This will be provided by the consuming application -->
-        
+
         <!-- Web Framework -->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
             <version>${spark.version}</version>
         </dependency>
-        
+
         <!-- JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
