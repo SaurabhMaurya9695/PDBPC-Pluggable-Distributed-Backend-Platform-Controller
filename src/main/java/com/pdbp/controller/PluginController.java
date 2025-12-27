@@ -178,12 +178,13 @@ public class PluginController {
 
             String pluginName = installRequest.getPluginName();
             String jarPath = installRequest.getJarPath();
-            String className = installRequest.getClassName();
+            String className = installRequest.getClassName(); // Optional - SPI will discover if not provided
 
-            if (pluginName == null || jarPath == null || className == null) {
-                return errorResponse(response, 400, "Missing required fields: pluginName, jarPath, className");
+            if (pluginName == null || jarPath == null) {
+                return errorResponse(response, 400, "Missing required fields: pluginName, jarPath. className is optional (SPI will discover if not provided).");
             }
 
+            // className is optional - SPI will discover it if not provided
             PluginService.PluginInfo info = pluginService.installPlugin(pluginName, jarPath, className);
             return successResponse(response, 201, toPluginInfoDTO(info));
         } catch (PluginService.PluginServiceException e) {
