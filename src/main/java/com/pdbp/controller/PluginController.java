@@ -13,6 +13,7 @@ import spark.Request;
 import spark.Response;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,12 @@ public class PluginController {
         before((request, response) -> {
             response.header("Access-Control-Allow-Origin", "*");
             response.type("application/json");
+
+            // Record API request (skip OPTIONS and /health)
+            String path = request.pathInfo();
+            if (path != null && !path.equals("/health") && !request.requestMethod().equals("OPTIONS")) {
+                pluginService.recordApiRequest(path);
+            }
         });
     }
 
@@ -84,6 +91,7 @@ public class PluginController {
         get("/api/plugins", this::listPlugins);
         get("/api/plugins/discover", this::discoverPlugins);
         get("/api/plugins/:name", this::getPluginInfo);
+        get("/api/metrics", this::getMetrics);
         post("/api/plugins/install", this::installPlugin);
         post("/api/plugins/:name/start", this::startPlugin);
         post("/api/plugins/:name/stop", this::stopPlugin);
@@ -105,6 +113,10 @@ public class PluginController {
             response.type("application/json");
             String errorMsg = getRootCauseMessage(exception);
             response.body(JsonUtils.errorResponse(errorMsg));
+            // Record API error
+            if (request.pathInfo() != null) {
+                pluginService.recordApiError(request.pathInfo());
+            }
         });
 
         exception(Exception.class, (exception, request, response) -> {
@@ -112,6 +124,10 @@ public class PluginController {
             response.status(500);
             response.type("application/json");
             response.body(JsonUtils.errorResponse("Internal server error"));
+            // Record API error
+            if (request.pathInfo() != null) {
+                pluginService.recordApiError(request.pathInfo());
+            }
         });
     }
 
@@ -217,6 +233,17 @@ public class PluginController {
             pluginService.unloadPlugin(pluginName);
             response.status(200);
             return JsonUtils.messageResponse("Plugin unloaded: " + pluginName);
+        }, response);
+    }
+
+    /**
+     * Gets platform metrics.
+     */
+    private String getMetrics(Request request, Response response) {
+        return execute(() -> {
+            Map<String, Object> metrics = pluginService.getMetrics();
+            response.status(200);
+            return objectMapper.writeValueAsString(metrics);
         }, response);
     }
 

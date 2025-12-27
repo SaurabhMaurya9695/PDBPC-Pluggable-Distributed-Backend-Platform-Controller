@@ -1,6 +1,7 @@
 package com.pdbp.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -73,6 +74,27 @@ public interface PluginService {
      * @throws PluginServiceException if unloading fails
      */
     void unloadPlugin(String pluginName) throws PluginServiceException;
+
+    /**
+     * Gets platform metrics.
+     *
+     * @return metrics data as a map
+     */
+    Map<String, Object> getMetrics();
+
+    /**
+     * Records an API request for metrics tracking.
+     *
+     * @param endpoint the API endpoint path
+     */
+    void recordApiRequest(String endpoint);
+
+    /**
+     * Records an API error for metrics tracking.
+     *
+     * @param endpoint the API endpoint path
+     */
+    void recordApiError(String endpoint);
 
     /**
      * Plugin information model.
