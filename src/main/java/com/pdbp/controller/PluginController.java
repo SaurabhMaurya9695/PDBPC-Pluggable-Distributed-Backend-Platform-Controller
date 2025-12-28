@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,10 +92,12 @@ public class PluginController {
         get("/api/plugins", this::listPlugins);
         get("/api/plugins/discover", this::discoverPlugins);
         get("/api/plugins/:name", this::getPluginInfo);
+        get("/api/plugins/:name/config", this::getPluginConfig);
         get("/api/metrics", this::getMetrics);
         post("/api/plugins/install", this::installPlugin);
         post("/api/plugins/:name/start", this::startPlugin);
         post("/api/plugins/:name/stop", this::stopPlugin);
+        put("/api/plugins/:name/config", this::updatePluginConfig);
         delete("/api/plugins/:name", this::unloadPlugin);
     }
 
@@ -246,6 +249,67 @@ public class PluginController {
             response.status(200);
             return objectMapper.writeValueAsString(metrics);
         }, response);
+    }
+
+    /**
+     * Gets plugin configuration.
+     * 
+     * GET /api/plugins/{name}/config
+     * 
+     * Response: { "key1": "value1", "key2": "value2" }
+     */
+    private String getPluginConfig(Request request, Response response) {
+        return execute(() -> {
+            String pluginName = request.params(":name");
+
+            // Validate plugin exists
+            if (pluginService.getPluginInfo(pluginName) == null) {
+                return errorResponse(response, 404, "Plugin not found: " + pluginName);
+            }
+
+            Map<String, String> config = pluginService.getPluginConfig(pluginName);
+            return successResponse(response, 200, config);
+        }, response);
+    }
+
+    /**
+     * Updates plugin configuration.
+     * 
+     * PUT /api/plugins/{name}/config
+     * 
+     * Request Body: { "key1": "newValue1", "key2": "newValue2" }
+     * Response: { "status": "success", "message": "Configuration updated" }
+     */
+    private String updatePluginConfig(Request request, Response response) {
+        try {
+            String pluginName = request.params(":name");
+            
+            // Validate plugin exists
+            if (pluginService.getPluginInfo(pluginName) == null) {
+                return errorResponse(response, 404, "Plugin not found: " + pluginName);
+            }
+
+            // Parse request body
+            @SuppressWarnings("unchecked")
+            Map<String, String> config = objectMapper.readValue(request.body(), Map.class);
+            
+            if (config == null || config.isEmpty()) {
+                return errorResponse(response, 400, "Configuration cannot be empty");
+            }
+
+            // Update configuration
+            pluginService.updatePluginConfig(pluginName, config);
+            
+            Map<String, String> successResponse = new HashMap<>();
+            successResponse.put("status", "success");
+            successResponse.put("message", "Configuration updated");
+            
+            return successResponse(response, 200, successResponse);
+        } catch (PluginService.PluginServiceException e) {
+            return handleServiceException(response, e);
+        } catch (Exception e) {
+            return handleUnexpectedException(response, e, "updating plugin configuration");
+        }
     }
 
     /**

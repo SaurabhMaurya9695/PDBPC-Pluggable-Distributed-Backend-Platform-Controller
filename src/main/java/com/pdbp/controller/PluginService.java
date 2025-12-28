@@ -97,6 +97,24 @@ public interface PluginService {
     void recordApiError(String endpoint);
 
     /**
+     * Gets plugin configuration.
+     *
+     * @param pluginName the plugin name
+     * @return configuration map, or null if plugin not found
+     * @throws PluginServiceException if operation fails
+     */
+    Map<String, String> getPluginConfig(String pluginName) throws PluginServiceException;
+
+    /**
+     * Updates plugin configuration.
+     *
+     * @param pluginName the plugin name
+     * @param config    configuration map to update
+     * @throws PluginServiceException if operation fails
+     */
+    void updatePluginConfig(String pluginName, Map<String, String> config) throws PluginServiceException;
+
+    /**
      * Plugin information model.
      */
     class PluginInfo {
